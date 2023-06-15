@@ -1,5 +1,8 @@
 const mongoose = require("mongoose");
+
+//libraries
 const validator = require("validator");
+const bcrypt = require("bcryptjs");
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -28,5 +31,20 @@ const UserSchema = new mongoose.Schema({
     default: "user",
   },
 });
+
+//before (pre) we save the document, we want to has the password
+UserSchema.pre("save", async function () {
+  //this points back to the user
+  //salt is # of rounds
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+});
+
+//function to compare the hashed passwords...only way is to take stored password, hash it, and compare
+UserSchema.methods.comparePassword = async function (candidatePassword) {
+  const isMatch = await bcrypt.compare(candidatePassword, this.password);
+  //will return true if they match
+  return isMatch;
+};
 
 module.exports = mongoose.model("User", UserSchema);
