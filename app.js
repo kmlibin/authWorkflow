@@ -2,27 +2,29 @@
 require("dotenv").config();
 
 //express errors
-require('express-async-errors');
+require("express-async-errors");
 
 //server
 const express = require("express");
 const app = express();
 
 //rest of the packages
-const morgan = require('morgan');
+const morgan = require("morgan");
+const cookieParser = require("cookie-parser");
 
 //database
 const connectDB = require("./db/connect");
 
 //routers
-const authRouter = require('./routes/authRoutes')
+const authRouter = require("./routes/authRoutes");
 
-//middleware
+//middleware 
 const notFoundMiddleware = require("./middleware/not-found");
 const errorHandlerMiddleware = require("./middleware/error-handler");
 
-app.use(morgan('tiny'))
+app.use(morgan("tiny"));
 app.use(express.json());
+app.use(cookieParser());
 
 //home route
 app.get("/", (req, res) => {
@@ -30,12 +32,12 @@ app.get("/", (req, res) => {
 });
 
 //routes
-app.use('/api/v1/auth', authRouter);
+app.use("/api/v1/auth", authRouter);
 
-//why 404 before errorhandler? error handler needs to come last as per express rules. 
+//why 404 before errorhandler? error handler needs to come last as per express rules.
 //you only get to it if the route exists and there's an issue
 app.use(notFoundMiddleware);
-app.use(errorHandlerMiddleware)
+app.use(errorHandlerMiddleware);
 
 //set up port variable and start function
 const port = process.env.PORT || 5000;
