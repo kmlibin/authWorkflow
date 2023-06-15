@@ -3,7 +3,7 @@ const User = require("../models/User");
 //errors
 const CustomError = require("../errors");
 //utils
-const { createJWT } = require("../utils");
+const { attachCookiesToResponse } = require("../utils");
 //libraries
 const { StatusCodes } = require("http-status-codes");
 
@@ -23,12 +23,10 @@ const registerUser = async (req, res) => {
   const user = await User.create({ name, email, password, role });
   //create a token user (what you wantto send back) and token for the user
   const tokenUser = { name: user.name, userId: user._id, role: user.role };
-  const token = createJWT({ payload: tokenUser });
-
-  //send back to frontend
+  //token & cookie are created in this util func. this func specifically attaches cookie to the response.
+  attachCookiesToResponse({ res, user: tokenUser });
   res.status(StatusCodes.CREATED).json({
     user: tokenUser,
-    token,
   });
 };
 
