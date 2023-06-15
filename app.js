@@ -1,23 +1,40 @@
 //dotenv
-require('dotenv').config()
+require("dotenv").config();
+
+//express errors
+require('express-async-errors');
 
 //server
-const express = require('express');
+const express = require("express");
 const app = express();
 
 //database
-const connectDB = require('./db/connect')
+const connectDB = require("./db/connect");
+
+//middleware
+const notFoundMiddleware = require("./middleware/not-found");
+const errorHandlerMiddleware = require("./middleware/error-handler");
+
+app.use(express.json());
+
+//routes
+app.get("/", (req, res) => {
+  res.send("ecommerce api");
+});
+
+app.use(notFoundMiddleware);
+app.use(errorHandlerMiddleware)
 
 //set up port variable and start function
-const port = process.env.PORT || 5000
+const port = process.env.PORT || 5000;
 
 const start = async () => {
-    try {
-        await connectDB(process.env.MONGO_URI)
-        app.listen(port, console.log('server is listening on 5000...'))
-    }catch(err) {
-        console.log(err)
-    }
-}
+  try {
+    await connectDB(process.env.MONGO_URI);
+    app.listen(port, console.log("server is listening on 5000..."));
+  } catch (err) {
+    console.log(err);
+  }
+};
 
 start();
