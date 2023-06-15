@@ -13,8 +13,12 @@ const registerUser = async (req, res) => {
   if (checkIfExists) {
     throw new CustomError.BadRequestError("email already in use");
   }
-  //create a new user
-  const user = await User.create({name, email, password});
+  //first registered user is admin
+  const isFirstAccount = await User.countDocuments({}) === 0
+  const role = isFirstAccount? 'admin' : 'user'
+
+  //create a new user w name/email/password..role can't be manipulated b/c checked above. or delete above, only create w/ name, email, pass
+  const user = await User.create({name, email, password, role});
   res.status(StatusCodes.CREATED).json({
     user,
   });
