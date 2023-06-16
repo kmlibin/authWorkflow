@@ -31,7 +31,32 @@ const registerUser = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
-  res.send("login user");
+  const { email, password } = req.body;
+  //check for email and password
+  if (!email || !password) {
+    throw new CustomError.BadRequestError("please provide email and password");
+  }
+  //check that user exists
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new CustomError.UnauthenticatedError(
+      "user does not exist, please register"
+    );
+  }
+  //check that passwords match
+  const passwordIsCorrect = await user.comparePassword(password);
+  // console.log(passwordIsCorrect); returns a boolean
+  if (!passwordIsCorrect) {
+    throw new CustomError.UnauthenticatedError(
+      "please provide correct password"
+    );
+  }
+
+  //attach cookies and send back
+  const tokenUser = { name: user.name, userId: user._id, role: user.role };
+  attachCookiesToResponse({ res, user: tokenUser });
+
+  res.status(StatusCodes.OK).json({ tokenUser });
 };
 
 const logoutUser = async (req, res) => {
