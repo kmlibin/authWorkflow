@@ -24,7 +24,8 @@ const errorHandlerMiddleware = require("./middleware/error-handler");
 
 app.use(morgan("tiny"));
 app.use(express.json());
-app.use(cookieParser());
+//signing our cookies, now available in req.signedCookies
+app.use(cookieParser(process.env.JWT_SECRET));
 
 //home route
 app.get("/", (req, res) => {
