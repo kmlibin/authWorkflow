@@ -60,7 +60,12 @@ const loginUser = async (req, res) => {
 };
 
 const logoutUser = async (req, res) => {
-  res.send("logout user");
+  //remove cookie from browser...token name of cookie we set up earlier in attachCookieToResponse. setting up a new string and this is value
+  res.cookie('token', 'logout', {
+    httpOnly: true,
+    expires: new Date(Date.now() + 5 * 1000) //5 seconds...just end on date.now and cookie will be gone
+  });
+  res.status(StatusCodes.OK).json({msg: 'user logged out'}) //msg just for dev, frontend doesn't really need anything
 };
 
 module.exports = { registerUser, loginUser, logoutUser };
