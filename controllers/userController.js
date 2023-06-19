@@ -3,6 +3,7 @@ const { StatusCodes } = require("http-status-codes");
 const CustomError = require("../errors");
 
 const getAllUsers = async (req, res) => {
+  //gets information from auth middleware...so now req.user is something we have access to.
   //route only for admin!
   //.select -password removes from the response
   const users = await User.find({ role: "user" }).select("-password");
