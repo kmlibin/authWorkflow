@@ -60,7 +60,7 @@ const loginUser = async (req, res) => {
 };
 
 const logoutUser = async (req, res) => {
-  //remove cookie from browser...token name of cookie we set up earlier in attachCookieToResponse. setting up a new string and this is value
+  //remove cookie from browser...token name of cookie we set up earlier in attachCookieToResponse. setting up a new string and this is value (logout)
   res.cookie('token', 'logout', {
     httpOnly: true,
     expires: new Date(Date.now() + 5 * 1000) //5 seconds...just end on date.now and cookie will be gone
