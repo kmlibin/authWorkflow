@@ -3,7 +3,7 @@ const { StatusCodes } = require("http-status-codes");
 const CustomError = require("../errors");
 
 const getAllUsers = async (req, res) => {
-  console.log(req);
+  //route only for admin!
   //.select -password removes from the response
   const users = await User.find({ role: "user" }).select("-password");
   res.status(StatusCodes.OK).json({ users });
