@@ -11,7 +11,8 @@ const createJWT = ({ payload }) => {
 
 //use in auth middleware
 const isTokenValid = ({ token }) => {
-  jwt.verify(token, process.env.JWT_SECRET);
+  console.log(token)
+ return jwt.verify(token, process.env.JWT_SECRET);
 };
 
 //res from auth controller,user is tokenuser from auth controller
