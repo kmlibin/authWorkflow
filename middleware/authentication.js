@@ -3,7 +3,7 @@ const { isTokenValid } = require("../utils");
 
 //next, gets passed into our route next
 //remember, we have token found in signedCookies. token the name we gave
-const authenticateUser = async (req, res, next) => {
+const authenticateUser = (req, res, next) => {
   const token = req.signedCookies.token;
   if (!token) {
     throw new CustomError.UnauthenticatedError("Authentication Invalid");
@@ -24,13 +24,16 @@ const authenticateUser = async (req, res, next) => {
 };
 
 //authorize permissions...if it's an admin, we will pass it on to the next route
-
-const authorizePermissions = async (req, res, next) => {
-  //now only admin can see the route
-  if(req.user.role != 'admin') {
-    throw new CustomError.UnauthorizedError('unauthorized access')
-  }
-  next();
+//we want to return a function, see comments in userRoutes
+//...rest operator collects all values being passed in
+const authorizePermissions = (...rest) => {
+  //callback
+  return (req, res, next) => {
+    if (!rest.includes(req.user.role)) {
+      throw new CustomError.UnauthorizedError("unauthorized access");
+    }
+    next()
+  };
 };
 
 module.exports = { authenticateUser, authorizePermissions };

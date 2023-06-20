@@ -15,7 +15,9 @@ const {
   updateUserPassword,
 } = require("../controllers/userController");
 
-router.route("/").get(authenticateUser, authorizePermissions, getAllUsers);
+//adding arguments is an issue of invoking - if we do authPermissions('user', 'admin'), it invokes right away, it's not just a reference. 
+//it's like onClick handlers in React, we don't want to immediately invoke it. so, now we want to return a function in authPermissions
+router.route("/").get(authenticateUser, authorizePermissions('admin', 'owner'), getAllUsers);
 //order is important - must go before :id, or else will confuse with an :id
 router.route("/showMe").get(showCurrentUser);
 router.route("/updateUser").patch(updateUser);
