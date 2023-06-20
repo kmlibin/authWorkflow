@@ -19,7 +19,7 @@ const {
 //it's like onClick handlers in React, we don't want to immediately invoke it. so, now we want to return a function in authPermissions
 router.route("/").get(authenticateUser, authorizePermissions('admin', 'owner'), getAllUsers);
 //order is important - must go before :id, or else will confuse with an :id
-router.route("/showMe").get(showCurrentUser);
+router.route("/showMe").get(authenticateUser, showCurrentUser);
 router.route("/updateUser").patch(updateUser);
 router.route("/updateUserPassword").patch(updateUserPassword);
 router.route("/:id").get(authenticateUser, getSingleUser);

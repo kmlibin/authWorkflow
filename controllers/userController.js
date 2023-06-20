@@ -18,8 +18,10 @@ const getSingleUser = async (req, res) => {
   res.status(StatusCodes.OK).json({ user });
 };
 
+//not querying the db, just checking for user
 const showCurrentUser = async (req, res) => {
-  res.send("show current user");
+  //gets this from the middleware that runs first in the route
+  res.status(StatusCodes.OK).json({user: req.user})
 };
 
 const updateUser = async (req, res) => {
