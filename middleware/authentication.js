@@ -14,7 +14,13 @@ const authenticateUser = (req, res, next) => {
     const payload = isTokenValid({ token });
 
     //adding to the request object
-    req.user = { name: payload.name, userId: payload._id, role: payload.role };
+
+    req.user = {
+      name: payload.name,
+      userId: payload.userId,
+      role: payload.role,
+    };
+
     //payload shows user object..why? payload in isTokenValid does not return this
     // console.log(payload);
     next();
@@ -32,7 +38,7 @@ const authorizePermissions = (...rest) => {
     if (!rest.includes(req.user.role)) {
       throw new CustomError.UnauthorizedError("unauthorized access");
     }
-    next()
+    next();
   };
 };
 
