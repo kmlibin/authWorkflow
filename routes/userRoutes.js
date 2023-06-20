@@ -21,7 +21,7 @@ router.route("/").get(authenticateUser, authorizePermissions('admin', 'owner'), 
 //order is important - must go before :id, or else will confuse with an :id
 router.route("/showMe").get(authenticateUser, showCurrentUser);
 router.route("/updateUser").patch(updateUser);
-router.route("/updateUserPassword").patch(updateUserPassword);
+router.route("/updateUserPassword").patch(authenticateUser, updateUserPassword);
 router.route("/:id").get(authenticateUser, getSingleUser);
 
 module.exports = router;

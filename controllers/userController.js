@@ -21,7 +21,7 @@ const getSingleUser = async (req, res) => {
 //not querying the db, just checking for user
 const showCurrentUser = async (req, res) => {
   //gets this from the middleware that runs first in the route
-  res.status(StatusCodes.OK).json({user: req.user})
+  res.status(StatusCodes.OK).json({ user: req.user });
 };
 
 const updateUser = async (req, res) => {
@@ -29,8 +29,22 @@ const updateUser = async (req, res) => {
 };
 
 const updateUserPassword = async (req, res) => {
-  res.send("update password");
+  const { oldPassword, newPassword } = req.body;
+  if (!oldPassword || !newPassword) {
+    throw new CustomError.BadRequestError("please provide both values");
+  } //find one where the id = req.user.userID. we have access to req.user if token is still valid
+
+  const user = await User.findOne({ _id: req.user.userId });
+  //checking that the password is correct, that user is indeed logged in and auth to do this
+  const isPasswordCorrect = await user.comparePassword(oldPassword);
+  if (!isPasswordCorrect) {
+    throw new CustomError.UnauthenticatedError("please login");
+  }
+  user.password = newPassword;
+  await user.save();
+  res.status(StatusCodes.OK).json({msg: 'successfully changed password'})
 };
+
 
 module.exports = {
   getAllUsers,
