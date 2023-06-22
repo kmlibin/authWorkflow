@@ -34,6 +34,10 @@ const UserSchema = new mongoose.Schema({
 
 //before (pre) we save the document, we want to has the password
 UserSchema.pre("save", async function () {
+  // console.log(this.modifiedPaths());
+  // console.log(this.modifiedPaths('email')) returns boolean t if email is modified, f if not
+  //if we are modifiying the password, proceed. if not, return
+  if (!this.isModified("password")) return;
   //this points back to the user
   //salt is # of rounds
   const salt = await bcrypt.genSalt(10);
