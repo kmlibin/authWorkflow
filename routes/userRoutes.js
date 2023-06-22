@@ -20,7 +20,7 @@ const {
 router.route("/").get(authenticateUser, authorizePermissions('admin', 'owner'), getAllUsers);
 //order is important - must go before :id, or else will confuse with an :id
 router.route("/showMe").get(authenticateUser, showCurrentUser);
-router.route("/updateUser").patch(updateUser);
+router.route("/updateUser").patch(authenticateUser, updateUser);
 router.route("/updateUserPassword").patch(authenticateUser, updateUserPassword);
 router.route("/:id").get(authenticateUser, getSingleUser);
 
