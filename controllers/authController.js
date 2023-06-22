@@ -3,7 +3,7 @@ const User = require("../models/User");
 //errors
 const CustomError = require("../errors");
 //utils
-const { attachCookiesToResponse } = require("../utils");
+const { attachCookiesToResponse, createTokenUser } = require("../utils");
 //libraries
 const { StatusCodes } = require("http-status-codes");
 
@@ -22,7 +22,8 @@ const registerUser = async (req, res) => {
   //create a new user w name/email/password..role can't be manipulated b/c checked above. or delete above, only create w/ name, email, pass
   const user = await User.create({ name, email, password, role });
   //create a token user (what you wantto send back) and token for the user
-  const tokenUser = { name: user.name, userId: user._id, role: user.role };
+  const tokenUser = createTokenUser(user)
+  console.log(tokenUser)
   //token & cookie are created in this util func. this func specifically attaches cookie to the response.
   attachCookiesToResponse({ res, user: tokenUser });
   res.status(StatusCodes.CREATED).json({
@@ -53,7 +54,7 @@ const loginUser = async (req, res) => {
   }
 
   //attach cookies and send back
-  const tokenUser = { name: user.name, userId: user._id, role: user.role };
+  const tokenUser = createTokenUser(user);
   attachCookiesToResponse({ res, user: tokenUser });
 
   res.status(StatusCodes.OK).json({ tokenUser });
