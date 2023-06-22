@@ -25,17 +25,19 @@ const showCurrentUser = async (req, res) => {
   res.status(StatusCodes.OK).json({ user: req.user });
 };
 
+//w user.save()...but at the moment it's hashing the password again, so password gets changed. if you console.log(this.modified path) in the
+//user presave hook, you get a list of the paths that have been modified (name, email, or both)
 const updateUser = async (req, res) => {
   const { name, email } = req.body;
   if (!name || !email) {
     throw new CustomError.BadRequestError();
   }
-  const user = await User.findOneAndUpdate(
-    //find user who matches this _id
-    { _id: req.user.userId },
-    { email, name },
-    { new: true, runValidators: true }
-  );
+  //get user and update manually
+  const user = await User.findOne({ _id: req.user.userId });
+  user.email = email;
+  user.name = name;
+
+  await user.save();
   //gotta give a new token if the information is updated
   const tokenUser = createTokenUser(user);
   attachCookiesToResponse({ res, user: tokenUser });
@@ -67,3 +69,21 @@ module.exports = {
   updateUser,
   updateUserPassword,
 };
+
+//update w/findoneand update
+// const updateUser = async (req, res) => {
+//   const { name, email } = req.body;
+//   if (!name || !email) {
+//     throw new CustomError.BadRequestError();
+//   }
+//   const user = await User.findOneAndUpdate(
+//     //find user who matches this _id
+//     { _id: req.user.userId },
+//     { email, name },
+//     { new: true, runValidators: true }
+//   );
+//   //gotta give a new token if the information is updated
+//   const tokenUser = createTokenUser(user);
+//   attachCookiesToResponse({ res, user: tokenUser });
+//   res.status(StatusCodes.OK).json({ user: tokenUser });
+// };
