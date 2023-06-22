@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const { StatusCodes } = require("http-status-codes");
 const CustomError = require("../errors");
+const { createTokenUser, attachCookiesToResponse } = require("../utils");
 
 const getAllUsers = async (req, res) => {
   //gets information from auth middleware...so now req.user is something we have access to.
@@ -25,15 +26,28 @@ const showCurrentUser = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-  res.send("update user");
+  const { name, email } = req.body;
+  if (!name || !email) {
+    throw new CustomError.BadRequestError();
+  }
+  const user = await User.findOneAndUpdate(
+    //find user who matches this _id
+    { _id: req.user.userId },
+    { email, name },
+    { new: true, runValidators: true }
+  );
+  //gotta give a new token if the information is updated
+  const tokenUser = createTokenUser(user);
+  attachCookiesToResponse({ res, user: tokenUser });
+  res.status(StatusCodes.OK).json({ user: tokenUser });
 };
 
 const updateUserPassword = async (req, res) => {
   const { oldPassword, newPassword } = req.body;
   if (!oldPassword || !newPassword) {
     throw new CustomError.BadRequestError("please provide both values");
-  } //find one where the id = req.user.userID. we have access to req.user if token is still valid
-
+  }
+  //find one where the id = req.user.userID. we have access to req.user if token is still valid
   const user = await User.findOne({ _id: req.user.userId });
   //checking that the password is correct, that user is indeed logged in and auth to do this
   const isPasswordCorrect = await user.comparePassword(oldPassword);
@@ -41,10 +55,10 @@ const updateUserPassword = async (req, res) => {
     throw new CustomError.UnauthenticatedError("please login");
   }
   user.password = newPassword;
+  //remember, user.save invokes the pre('save') hook on userSchema, so it encrypts the passwords
   await user.save();
-  res.status(StatusCodes.OK).json({msg: 'successfully changed password'})
+  res.status(StatusCodes.OK).json({ msg: "successfully changed password" });
 };
-
 
 module.exports = {
   getAllUsers,
