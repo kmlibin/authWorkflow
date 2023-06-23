@@ -37,7 +37,7 @@ app.get("/", (req, res) => {
 //routers
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
-app.use("api/v1/products", productRouter);
+app.use("/api/v1/products", productRouter);
 
 //why 404 before errorhandler? error handler needs to come last as per express rules.
 //you only get to it if the route exists and there's an issue
