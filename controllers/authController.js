@@ -23,7 +23,6 @@ const registerUser = async (req, res) => {
   const user = await User.create({ name, email, password, role });
   //create a token user (what you wantto send back) and token for the user
   const tokenUser = createTokenUser(user)
-  console.log(tokenUser)
   //token & cookie are created in this util func. this func specifically attaches cookie to the response.
   attachCookiesToResponse({ res, user: tokenUser });
   res.status(StatusCodes.CREATED).json({
