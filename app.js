@@ -11,6 +11,7 @@ const app = express();
 //rest of the packages
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
+const fileUpload = require('express-fileupload');
 
 //database
 const connectDB = require("./db/connect");
@@ -28,7 +29,9 @@ app.use(morgan("tiny"));
 app.use(express.json());
 //signing our cookies, now available in req.signedCookies
 app.use(cookieParser(process.env.JWT_SECRET));
-
+//make public folder available (setting it up as our static assets);
+app.use(express.static('./public'))
+app.use(fileUpload())
 //home route
 app.get("/", (req, res) => {
   res.send("ecommerce api");
