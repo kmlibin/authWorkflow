@@ -38,7 +38,7 @@ const ProductSchema = new mongoose.Schema(
     },
     colors: {
       type: [String],
-      default: ['#222'],
+      default: ["#222"],
       required: true,
     },
     featured: {
@@ -64,8 +64,19 @@ const ProductSchema = new mongoose.Schema(
       required: true,
     },
   },
-  //gives fields createdat and updated at
-  { timeStamps: true }
+  //timestampsgives fields createdat and updated at
+  //the other fields so the model accepts virtuals
+  { timeStamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
+//will also populate reviews assoc with product. but why can't just use populate and connect the models?
+ProductSchema.virtual("reviews", {
+  //points to a model
+  ref: "Review",
+  //connection between the two...reviews share the productId, in this model, it's called _id
+  localField: "_id",
+  //field in the review that matches the prop in review
+  foreignField: "product",
+  justOne: false,
+});
 module.exports = mongoose.model("Product", ProductSchema);
