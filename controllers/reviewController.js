@@ -29,7 +29,12 @@ const createReview = async (req, res) => {
 };
 
 const getAllReviews = async (req, res) => {
-  const reviews = await Review.find({});
+  //.populate, access to docs from another collection. so on review we hvae access to product id, what if we also want product
+  //company and price? first arg is what to reference, second is what props to get. 'product' reference to review model prop
+  const reviews = await Review.find({}).populate({
+    path: "product",
+    select: "name company price",
+  });
   res.status(StatusCodes.OK).json({ reviews, count: reviews.length });
 };
 
