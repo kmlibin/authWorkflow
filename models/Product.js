@@ -79,4 +79,11 @@ ProductSchema.virtual("reviews", {
   foreignField: "product",
   justOne: false,
 });
+
+//will remove the review when product is deleted. in controller, .remove triggers the pre hook
+ProductSchema.pre("remove", async function (next) {
+  //can pass in a different model, so can access more than just this
+  //delete many, what reviews do you want to remove? product is the property on the review model that references what we want to remove
+  await this.model("Review").deleteMany({ product: this._id });
+});
 module.exports = mongoose.model("Product", ProductSchema);
