@@ -36,12 +36,13 @@ ReviewSchema.index({ product: 1, user: 1 }, { unique: true });
 
 //methods v statics - methods you can call on the instance of user. statics, you call on the schema
 //gotta call it from the below hook
+//aggregate in code - getting ratings. can also do it on mongo
 ReviewSchema.statics.calculateAverageRating = async function (productId) {
   const result = await this.aggregate([
     { $match: { product: productId } },
     {
       $group: {
-        //or null in this case, see notes.
+        //or null in specific cases, see notes.
         _id: "$product",
         averageRating: { $avg: "$rating" },
         numOfReviews: { $sum: 1 },
