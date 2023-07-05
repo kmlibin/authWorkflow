@@ -21,6 +21,7 @@ const authRouter = require("./routes/authRoutes");
 const userRouter = require("./routes/userRoutes");
 const productRouter = require("./routes/productRoutes");
 const reviewRouter = require("./routes/reviewRoutes");
+const orderRouter = require("./routes/orderRoutes");
 
 //middleware
 const notFoundMiddleware = require("./middleware/not-found");
@@ -43,6 +44,7 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/products", productRouter);
 app.use("/api/v1/reviews", reviewRouter);
+app.use("/api/v1/orders", orderRouter);
 //why 404 before errorhandler? error handler needs to come last as per express rules.
 //you only get to it if the route exists and there's an issue
 app.use(notFoundMiddleware);
