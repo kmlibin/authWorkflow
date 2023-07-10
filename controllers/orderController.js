@@ -17,6 +17,11 @@ const getCurrentUserOrders = async (req, res) => {
   res.send("get current user order");
 };
 
+//fake stripe funtion
+const fakeStripeAPI = async ({ amount, currency }) => {
+  const client_secret = "randomValue";
+  return { client_secret, amount };
+};
 //from frontend, we expect product tax, shipping fee, an array of items
 const createOrder = async (req, res) => {
   const { items: cartItems, tax, shippingFee } = req.body;
@@ -49,12 +54,28 @@ const createOrder = async (req, res) => {
     };
 
     //add item to order...remember, we are still in a loop so it does this for each item
-    orderItems = [...orderItems, singleOrderItem]
+    orderItems = [...orderItems, singleOrderItem];
     //calculate subtotal
-    subtotal += item.amount * price
+    subtotal += item.amount * price;
   }
-  console.log(orderItems, subtotal)
-  res.send("create order");
+  //calculate total
+  const total = tax + shippingFee + subtotal;
+  //communicate with stripe to get client secret (fake function)
+  const paymentIntent = await fakeStripeAPI({
+    amount: total,
+    curreny: "usd",
+  });
+
+  const order = await Order.create({
+    orderItems,
+    total,
+    subtotal,
+    tax,
+    shippingFee,
+    clientSecret: paymentIntent.client_secret,
+    user: req.user.userId,
+  });
+  res.status(StatusCodes.CREATED).json({order, clientSecret: order.clientSecret});
 };
 
 const updateOrder = async (req, res) => {
