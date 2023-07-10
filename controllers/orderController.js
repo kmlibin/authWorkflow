@@ -6,7 +6,8 @@ const CustomError = require("../errors");
 const { checkPermissions } = require("../utils");
 
 const getAllOrders = async (req, res) => {
-  res.send("get all orders");
+  const orders = await Order.find({});
+  res.status(StatusCodes.OK).json({ orders, count: orders.length });
 };
 
 const getSingleOrder = async (req, res) => {
@@ -75,7 +76,9 @@ const createOrder = async (req, res) => {
     clientSecret: paymentIntent.client_secret,
     user: req.user.userId,
   });
-  res.status(StatusCodes.CREATED).json({order, clientSecret: order.clientSecret});
+  res
+    .status(StatusCodes.CREATED)
+    .json({ order, clientSecret: order.clientSecret });
 };
 
 const updateOrder = async (req, res) => {
