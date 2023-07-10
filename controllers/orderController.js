@@ -95,8 +95,20 @@ const createOrder = async (req, res) => {
     .json({ order, clientSecret: order.clientSecret });
 };
 
+//updates if it's been paid, updates with payment intent id
 const updateOrder = async (req, res) => {
-  res.send("update order");
+  const { id: orderId } = req.params;
+  const { paymentIntentId } = req.body;
+  const order = await Order.findOne({ _id: orderId });
+  if (!order) {
+    throw new CustomError.NotFoundError("no order with that id");
+  }
+  checkPermissions(req.user, order.user);
+  //recall these in the schema
+  (order.paymentIntentId = paymentIntentId), 
+  (order.status = "paid");
+  await order.save();
+  res.status(StatusCodes.OK).json({ order });
 };
 
 module.exports = {
