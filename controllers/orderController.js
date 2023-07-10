@@ -24,7 +24,12 @@ const getSingleOrder = async (req, res) => {
 };
 
 const getCurrentUserOrders = async (req, res) => {
-  res.send("get current user order");
+  //find orders where user is equal to req.user.userId
+  const currentUserOrders = await Order.find({ user: req.user.userId });
+  if (!currentUserOrders) {
+    throw new CustomError.NotFoundError("no orders associated with that id");
+  }
+  res.status(StatusCodes.OK).json({ currentUserOrders });
 };
 
 //fake stripe funtion
