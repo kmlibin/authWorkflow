@@ -3,9 +3,14 @@ const User = require("../models/User");
 //errors
 const CustomError = require("../errors");
 //utils
-const { attachCookiesToResponse, createTokenUser } = require("../utils");
+const {
+  attachCookiesToResponse,
+  createTokenUser,
+  sendVerificationEmail,
+} = require("../utils");
 //libraries
 const { StatusCodes } = require("http-status-codes");
+const crypto = require("crypto");
 
 const registerUser = async (req, res) => {
   const { email, name, password } = req.body;
@@ -19,8 +24,9 @@ const registerUser = async (req, res) => {
   const isFirstAccount = (await User.countDocuments({})) === 0;
   const role = isFirstAccount ? "admin" : "user";
 
-  //set up fake verification token...so when i'm creating user, pass this in.
-  const verificationToken = "fake token";
+  //set up verification token...so when i'm creating user, pass this in. you want unique token for each user.
+  //this (randomBytes) is a buffer, we want to turn it into a string
+  const verificationToken = crypto.randomBytes(40).toString("hex");
   //create a new user w name/email/password..role can't be manipulated b/c checked above. or delete above, only create w/ name, email, pass
   const user = await User.create({
     name,
@@ -30,13 +36,20 @@ const registerUser = async (req, res) => {
     verificationToken,
   });
 
+  //origin, where user navigates when they click on the link
+  const origin = "http://localhost:3000";
+
+  await sendVerificationEmail({
+    name: user.name,
+    email: user.email,
+    verificationToken: user.verificationToken,
+    origin,
+  });
+
   //just for postman - we will send an email back, not verification token
-  res
-    .status(StatusCodes.CREATED)
-    .json({
-      msg: "success, verify email pls",
-      verificationToken: user.verificationToken,
-    });
+  res.status(StatusCodes.CREATED).json({
+    msg: "success, verify email pls",
+  });
 };
 
 const loginUser = async (req, res) => {
@@ -60,7 +73,10 @@ const loginUser = async (req, res) => {
       "please provide correct password"
     );
   }
-
+  //check if user has verified email
+  if (!user.isVerified) {
+    throw new CustomError.UnauthenticatedError("please verify email");
+  }
   //attach cookies and send back
   const tokenUser = createTokenUser(user);
   attachCookiesToResponse({ res, user: tokenUser });
@@ -77,4 +93,22 @@ const logoutUser = async (req, res) => {
   res.status(StatusCodes.OK).json({ msg: "user logged out" }); //msg just for dev, frontend doesn't really need anything
 };
 
-module.exports = { registerUser, loginUser, logoutUser };
+const verifyEmail = async (req, res) => {
+  const { verificationToken, email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new CustomError.UnauthorizedError("verification failed");
+  }
+  if (verificationToken !== user.verificationToken) {
+    throw new CustomError.UnauthorizedError("verification denied");
+  }
+
+  user.isVerified = true;
+  user.verified = Date.now();
+  user.verificationToken = '';
+
+  await user.save();
+  res.status(StatusCodes.OK).json({ msg: "email verified" });
+};
+
+module.exports = { registerUser, loginUser, logoutUser, verifyEmail };
