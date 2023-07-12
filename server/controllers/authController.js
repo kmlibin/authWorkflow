@@ -104,7 +104,7 @@ const loginUser = async (req, res) => {
   //check for existing token
 
   //want to set up two cookies, the access one and the refresh one
-  //set up refresh to send to attach cookies, that func attaches both cookies
+  //set up refresh to send to attach cookies, that func attaches both cookies. refresh lives on the server to request another access token
   refreshToken = crypto.randomBytes(40).toString("hex");
 
   //add to Token model
