@@ -1,5 +1,6 @@
 //import model
 const User = require("../models/User");
+const Token = require("../models/Token");
 //errors
 const CustomError = require("../errors");
 //utils
@@ -52,6 +53,24 @@ const registerUser = async (req, res) => {
   });
 };
 
+const verifyEmail = async (req, res) => {
+  const { verificationToken, email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new CustomError.UnauthorizedError("verification failed");
+  }
+  if (verificationToken !== user.verificationToken) {
+    throw new CustomError.UnauthorizedError("verification denied");
+  }
+
+  user.isVerified = true;
+  user.verified = Date.now();
+  user.verificationToken = "";
+
+  await user.save();
+  res.status(StatusCodes.OK).json({ msg: "email verified" });
+};
+
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
   //check for email and password
@@ -79,7 +98,22 @@ const loginUser = async (req, res) => {
   }
   //attach cookies and send back
   const tokenUser = createTokenUser(user);
-  attachCookiesToResponse({ res, user: tokenUser });
+  //create refresh token
+  let refreshToken = "";
+
+  //check for existing token
+
+  //want to set up two cookies, the access one and the refresh one
+  //set up refresh to send to attach cookies, that func attaches both cookies
+  refreshToken = crypto.randomBytes(40).toString("hex");
+
+  //add to Token model
+  const userAgent = req.headers["user-agent"];
+  const ip = req.ip;
+  const userToken = { refreshToken, ip, userAgent, user: user._id };
+  await Token.create(userToken);
+
+  attachCookiesToResponse({ res, user: tokenUser, refreshToken });
 
   res.status(StatusCodes.OK).json({ tokenUser });
 };
@@ -91,24 +125,6 @@ const logoutUser = async (req, res) => {
     expires: new Date(Date.now() + 5 * 1000), //5 seconds...just end on date.now and cookie will be gone
   });
   res.status(StatusCodes.OK).json({ msg: "user logged out" }); //msg just for dev, frontend doesn't really need anything
-};
-
-const verifyEmail = async (req, res) => {
-  const { verificationToken, email } = req.body;
-  const user = await User.findOne({ email });
-  if (!user) {
-    throw new CustomError.UnauthorizedError("verification failed");
-  }
-  if (verificationToken !== user.verificationToken) {
-    throw new CustomError.UnauthorizedError("verification denied");
-  }
-
-  user.isVerified = true;
-  user.verified = Date.now();
-  user.verificationToken = '';
-
-  await user.save();
-  res.status(StatusCodes.OK).json({ msg: "email verified" });
 };
 
 module.exports = { registerUser, loginUser, logoutUser, verifyEmail };
