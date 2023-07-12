@@ -19,15 +19,24 @@ const registerUser = async (req, res) => {
   const isFirstAccount = (await User.countDocuments({})) === 0;
   const role = isFirstAccount ? "admin" : "user";
 
+  //set up fake verification token...so when i'm creating user, pass this in.
+  const verificationToken = "fake token";
   //create a new user w name/email/password..role can't be manipulated b/c checked above. or delete above, only create w/ name, email, pass
-  const user = await User.create({ name, email, password, role });
-  //create a token user (what you wantto send back) and token for the user
-  const tokenUser = createTokenUser(user)
-  //token & cookie are created in this util func. this func specifically attaches cookie to the response.
-  attachCookiesToResponse({ res, user: tokenUser });
-  res.status(StatusCodes.CREATED).json({
-    user: tokenUser,
+  const user = await User.create({
+    name,
+    email,
+    password,
+    role,
+    verificationToken,
   });
+
+  //just for postman - we will send an email back, not verification token
+  res
+    .status(StatusCodes.CREATED)
+    .json({
+      msg: "success, verify email pls",
+      verificationToken: user.verificationToken,
+    });
 };
 
 const loginUser = async (req, res) => {
@@ -61,11 +70,11 @@ const loginUser = async (req, res) => {
 
 const logoutUser = async (req, res) => {
   //remove cookie from browser...token name of cookie we set up earlier in attachCookieToResponse. setting up a new string and this is value (logout)
-  res.cookie('token', 'logout', {
+  res.cookie("token", "logout", {
     httpOnly: true,
-    expires: new Date(Date.now() + 5 * 1000) //5 seconds...just end on date.now and cookie will be gone
+    expires: new Date(Date.now() + 5 * 1000), //5 seconds...just end on date.now and cookie will be gone
   });
-  res.status(StatusCodes.OK).json({msg: 'user logged out'}) //msg just for dev, frontend doesn't really need anything
+  res.status(StatusCodes.OK).json({ msg: "user logged out" }); //msg just for dev, frontend doesn't really need anything
 };
 
 module.exports = { registerUser, loginUser, logoutUser };
