@@ -101,8 +101,19 @@ const loginUser = async (req, res) => {
   //create refresh token
   let refreshToken = "";
 
-  //check for existing token
-
+  //check for existing token in DB
+  const existingToken = await Token.findOne({user: user._id})
+  if(existingToken) {
+    const {isValid} = existingToken;
+    if(!isValid) {
+      throw new CustomError.UnauthenticatedError('invalid credentials')
+    }
+    refreshToken = existingToken.refreshToken;
+    attachCookiesToResponse({ res, user: tokenUser, refreshToken });
+    res.status(StatusCodes.OK).json({ user: tokenUser });
+    return
+  }
+  //if no refresh token
   //want to set up two cookies, the access one and the refresh one
   //set up refresh to send to attach cookies, that func attaches both cookies. refresh lives on the server to request another access token
   refreshToken = crypto.randomBytes(40).toString("hex");
