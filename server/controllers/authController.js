@@ -144,4 +144,19 @@ const logoutUser = async (req, res) => {
   res.status(StatusCodes.OK).json({ msg: "user logged out" }); //msg just for dev, frontend doesn't really need anything
 };
 
-module.exports = { registerUser, loginUser, logoutUser, verifyEmail };
+const forgotPassword = async (req, res) => {
+  res.send("forgot password");
+};
+
+const resetPassword = async (req, res) => {
+  res.send("reset password");
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
+  logoutUser,
+  verifyEmail,
+  forgotPassword,
+  resetPassword,
+};
