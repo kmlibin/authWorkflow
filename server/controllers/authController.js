@@ -102,16 +102,16 @@ const loginUser = async (req, res) => {
   let refreshToken = "";
 
   //check for existing token in DB
-  const existingToken = await Token.findOne({user: user._id})
-  if(existingToken) {
-    const {isValid} = existingToken;
-    if(!isValid) {
-      throw new CustomError.UnauthenticatedError('invalid credentials')
+  const existingToken = await Token.findOne({ user: user._id });
+  if (existingToken) {
+    const { isValid } = existingToken;
+    if (!isValid) {
+      throw new CustomError.UnauthenticatedError("invalid credentials");
     }
     refreshToken = existingToken.refreshToken;
     attachCookiesToResponse({ res, user: tokenUser, refreshToken });
     res.status(StatusCodes.OK).json({ user: tokenUser });
-    return
+    return;
   }
   //if no refresh token
   //want to set up two cookies, the access one and the refresh one
@@ -130,10 +130,16 @@ const loginUser = async (req, res) => {
 };
 
 const logoutUser = async (req, res) => {
-  //remove cookie from browser...token name of cookie we set up earlier in attachCookieToResponse. setting up a new string and this is value (logout)
-  res.cookie("token", "logout", {
+  //remove token
+  await Token.findOneAndDelete({ user: req.user.userId });
+  //remove both cookies from browser...token name of cookie we set up earlier in attachCookieToResponse. setting up a new string and this is value (logout)
+  res.cookie("accessToken", "logout", {
     httpOnly: true,
-    expires: new Date(Date.now() + 5 * 1000), //5 seconds...just end on date.now and cookie will be gone
+    expires: new Date(Date.now()),
+  });
+  res.cookie("refreshToken", "logout", {
+    httpOnly: true,
+    expires: new Date(Date.now()),
   });
   res.status(StatusCodes.OK).json({ msg: "user logged out" }); //msg just for dev, frontend doesn't really need anything
 };
