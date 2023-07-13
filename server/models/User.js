@@ -40,6 +40,12 @@ const UserSchema = new mongoose.Schema({
   verified: {
     type: Date,
   },
+  passwordToken: {
+    type: String,
+  },
+  passwordTokenExpirationDate: {
+    type: Date,
+  },
 });
 
 //before (pre) we save the document, we want to has the password
