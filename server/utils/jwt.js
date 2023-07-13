@@ -9,8 +9,7 @@ const createJWT = ({ payload }) => {
 };
 
 //use in auth middleware
-const isTokenValid = ({ token }) => {
-  console.log(token);
+const isTokenValid = ( token ) => {
   return jwt.verify(token, process.env.JWT_SECRET);
 };
 
@@ -27,7 +26,7 @@ const attachCookiesToResponse = ({ res, user, refreshToken }) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     signed: true,
-    maxAge: 2000,
+    maxAge: 2000 * 60 * 15,
   });
   res.cookie("refreshToken", refreshTokenJWT, {
     httpOnly: true,
