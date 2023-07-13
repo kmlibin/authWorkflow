@@ -1,29 +1,15 @@
 const CustomError = require("../errors");
 const { isTokenValid } = require("../utils");
 
-//next, gets passed into our route next
-//remember, we have token found in signedCookies. token the name we gave
 const authenticateUser = (req, res, next) => {
-  const token = req.signedCookies.token;
-  if (!token) {
-    throw new CustomError.UnauthenticatedError("Authentication Invalid");
-  }
+  const {refreshToken, accessToken} = req.signedCookies;
+  //check access token first b/c shorter expiration. if it's there, fine, just pass on to next req
   try {
-    //when user lgs in, creates a token user, attaches cookies to response, createJWT and user is payload. user info is encoded
-    //into the token. Istokenvalid uses jwt.verify, which decodes the token and thus the user. we then add it to the req object
-    const payload = isTokenValid({ token });
-
-    //adding to the request object
-
-    req.user = {
-      name: payload.name,
-      userId: payload.userId,
-      role: payload.role,
-    };
-
-    //payload shows user object..why? payload in isTokenValid does not return this
-    // console.log(payload);
-    next();
+    if(accessToken){
+      const payload = isTokenValid(accessToken)
+      req.user = payload.user
+      return next()
+    }
   } catch (error) {
     throw new CustomError.UnauthenticatedError("Authentication Invalid");
   }
